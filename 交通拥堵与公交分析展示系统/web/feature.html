@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>南京市交通与公交分析平台</title>
+  <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/>
+  <link rel="stylesheet" href="layui/css/layui.css"> 
+  <script src="layui/layui.js"></script>
+
+ <!--   <style>
+        html,
+        body,
+        #container {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>-->
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+  <div class="layui-header">
+    <div class="layui-logo">南京市交通与公交分析平台</div>
+    <!-- 头部区域（可配合layui已有的水平导航） -->
+    <ul class="layui-nav layui-layout-left">
+    </ul>
+    <ul class="layui-nav layui-layout-right">
+      <li class="layui-nav-item">
+        <a href="javascript:;">
+          <img src="http://t.cn/RCzsdCq" class="layui-nav-img">
+          孙玉庆
+        </a>
+        <dl class="layui-nav-child">
+          <dd><a href="">基本资料</a></dd>
+        </dl>
+      </li>
+      <li class="layui-nav-item"><a href="index.html">退出</a></li>
+    </ul>
+  </div>
+  
+  <div class="layui-side layui-bg-black">
+    <div class="layui-side-scroll">
+      <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+      <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+        <li class="layui-nav-item layui-nav-itemed">
+          <a class="" href="javascript:;">功能</a>
+          <dl class="layui-nav-child">
+            <dd><a href="traffic.html">实时拥堵</a></dd>
+            <dd><a href="bus.html">公交分布</a></dd>
+          </dl>
+        </li>
+        <li class="layui-nav-item">
+          <a href="javascript:;">解决方案</a>
+          <dl class="layui-nav-child">
+            <dd><a href="feature.html">特征公交线路优化</a></dd>
+          </dl>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 0px; height: 650px;" id="container">
+        </div>
+
+    </div>
+
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.14&key=1ce05304d8ae971dc4a3bc278b0dd44e"></script>
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.14&key=1ce05304d8ae971dc4a3bc278b0dd44e&plugin=AMap.LineSearch"></script>
+
+    <script>
+
+        var map = new AMap.Map('container', {
+            mapStyle: 'amap://styles/whitesmoke',
+            resizeEnable: true,
+            center: [118.796623, 32.059352],
+            zoom: 12
+        });
+
+        //实时路况图层
+        //var trafficLayer = new AMap.TileLayer.Traffic({
+        //    zIndex: 10
+        //});
+
+        //trafficLayer.setMap(map);
+
+        var linesearch;
+        function lineSearch() {
+            var busLineName = '2路';
+            if (!busLineName) return;
+            //实例化公交线路查询类，只取回一条路线
+            if (!linesearch) {
+                linesearch = new AMap.LineSearch({
+                    pageIndex: 1,
+                    city: '南京',
+                    pageSize: 1,
+                    extensions: 'all'
+                });
+            }
+            linesearch.search(busLineName, function (status, result) {
+                //map.clearMap()
+                if (status === 'complete' && result.info === 'OK') {
+                    lineSearch_Callback(result);
+                }
+                //else {
+                //    alert("没有找到相关线路");
+                //}
+            });
+        }
+        /*公交路线查询服务返回数据解析概况*/
+        function lineSearch_Callback(data) {
+            var lineArr = data.lineInfo;
+            var lineNum = data.lineInfo.length;
+            if (lineNum == 0) {
+            } else {
+                for (var i = 0; i < lineNum; i++) {
+                    var pathArr = lineArr[i].path;
+                    var stops = lineArr[i].via_stops;
+                    var startPot = stops[0].location;
+                    var endPot = stops[stops.length - 1].location;
+                    if (i == 0)
+                        drawbusLine(startPot, endPot, pathArr);
+
+                }
+            }
+        }
+        /*绘制路线*/
+        function drawbusLine(startPot, endPot, BusArr) {
+            //绘制起点，终点
+            new AMap.Marker({
+                map: map,
+                position: startPot, //基点位置
+                icon: "https://webapi.amap.com/theme/v1.3/markers/n/start.png",
+                zIndex: 10
+            });
+            new AMap.Marker({
+                map: map,
+                position: endPot, //基点位置
+                icon: "https://webapi.amap.com/theme/v1.3/markers/n/end.png",
+                zIndex: 10
+            });
+            //绘制乘车的路线
+            busPolyline = new AMap.Polyline({
+                map: map,
+                path: BusArr,
+
+                strokeColor: "#FF0000",//线颜色
+                strokeOpacity: 0.6,//线透明度
+                isOutline: true,
+                outlineColor: 'white',
+                strokeWeight: 6//线宽
+            });
+            map.setFitView();
+            // map.setFitView();
+        }
+        lineSearch();
+
+        var path = [
+     [118.787454, 32.037328],
+     [118.788471, 32.037123],
+     [118.789388, 32.041429],
+     [118.788106, 32.041516]
+        ];
+
+        var polyline = new AMap.Polyline({
+            path: path,
+            isOutline: true,
+            outlineColor: '#ffeeff',
+            borderWeight: 3,
+            strokeColor: "#00FF00",
+            strokeOpacity: 1,
+            strokeWeight: 6,
+            // 折线样式还支持 'dashed'
+            strokeStyle: "solid",
+            // strokeStyle是dashed时有效
+            strokeDasharray: [10, 5],
+            lineJoin: 'round',
+            lineCap: 'round',
+            zIndex: 50,
+        })
+
+        polyline.setMap(map)
+        map.setFitView([polyline])
+
+    </script>
+
+  <div class="layui-footer">
+    <!-- 底部固定区域 -->
+    © 2019 CUMT - NanJing 
+  </div>
+</div>
+
+<script>
+    //JavaScript代码区域
+    layui.use('element', function () {
+        var element = layui.element;
+
+    });
+</script>
+</body>
+</html>
+      
+
+
+<!--可以尝试融入多段线的绘制-->

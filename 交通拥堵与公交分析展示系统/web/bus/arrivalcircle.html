@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>南京市交通与公交分析平台</title>
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
+    <link rel="stylesheet" href="https://cache.amap.com/lbs/static/jquery.range.css"/>
+    <link rel="stylesheet" href="../layui/css/layui.css">
+    <script src="../layui/layui.js"></script>
+
+    <style>
+        html,
+        body,
+        #container {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+  <div class="layui-header">
+    <div class="layui-logo">南京市交通与公交分析平台</div>
+    <!-- 头部区域（可配合layui已有的水平导航） -->
+      <ul class="layui-nav layui-layout-left">
+          <li class="layui-nav-item"><a href="stationquery.html">公交站点查询</a></li>
+          <li class="layui-nav-item"><a href="linequery.html">公交线路查询</a></li>
+          <li class="layui-nav-item"><a href="arrivalcircle.html">公交到达圈</a></li>
+          <li class="layui-nav-item"><a href="distribution.html">公交站点分布</a></li>
+          <li class="layui-nav-item"><a href="aggregation.html">公交站点聚合</a></li>
+          <li class="layui-nav-item"><a href="linedistribution.html">公交线路分布</a></li>
+      </ul>
+    <ul class="layui-nav layui-layout-right">
+      <li class="layui-nav-item">
+        <a href="javascript:;">
+          <img src="http://t.cn/RCzsdCq" class="layui-nav-img">
+          孙玉庆
+        </a>
+        <dl class="layui-nav-child">
+          <dd><a href="">基本资料</a></dd>
+        </dl>
+      </li>
+      <li class="layui-nav-item"><a href="../index.html">退出</a></li>
+    </ul>
+  </div>
+  
+  <div class="layui-side layui-bg-black">
+    <div class="layui-side-scroll">
+      <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+      <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+        <li class="layui-nav-item layui-nav-itemed">
+          <a class="" href="javascript:;">功能</a>
+          <dl class="layui-nav-child">
+            <dd><a href="../traffic.html">实时拥堵</a></dd>
+            <dd><a href="../bus.html">公交分布</a></dd>
+          </dl>
+        </li>
+        <li class="layui-nav-item">
+          <a href="javascript:;">解决方案</a>
+          <dl class="layui-nav-child">
+            <dd><a href="../feature.html">特征公交线路优化</a></dd>
+          </dl>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 0px; height: 650px;" id="container">
+        </div>
+
+        <div class="input-card" style='width: 25rem;'>
+            <h4 style='color: grey'>公交到达圈查询</h4>
+            <div class="input-item">
+                <div class="input-item-prepend"><span class="input-item-text">出发位置</span></div>
+                <input id='lnglat' type="text" value='118.789024,32.023195'>
+            </div>
+            <div class="input-item" style='margin-bottom: 2rem;'>
+                <label>时长(分钟)</label>
+                <input type="hidden" id="t" class="single-slider" value="35" />
+            </div>
+
+            <div class="input-item">
+                <div class="input-item-prepend">
+                    <label class="input-item-text">出行方式</label>
+                </div>
+                <select iname="v" id="v">
+                    <option value="SUBWAY,BUS">地铁+公交</option>
+                    <option value="SUBWAY">地铁</option>
+                    <option selected value="BUS">公交</option>
+                </select>
+                <input id="search" type="button" class="btn" value="查询" />
+                <input id="clear" type="button" class="btn" value="清除" />
+            </div>
+        </div>
+
+    </div>
+
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.14&key=1ce05304d8ae971dc4a3bc278b0dd44e&plugin=AMap.ArrivalRange"></script>
+    <script src="https://cache.amap.com/lbs/static/jquery-1.9.1.js"></script>
+    <script src="https://cache.amap.com/lbs/static/jquery.range.js"></script>
+
+    <script>
+
+        var map = new AMap.Map('container', {
+            mapStyle: 'amap://styles/twilight',
+            zoom: 12,
+            center: [118.796623, 32.059352],
+            // AMap 底图 viewMode 默认为 2D，如需开启 3D 则需要显示指定
+            // viewMode: '2D'
+        });
+
+        function getLnglat(e) {
+            var lnglat = e.lnglat;
+            document.getElementById('lnglat').value = e.lnglat.toString()
+            getArriveRange();
+        }
+        map.on('click', getLnglat);
+
+        var centerMarker;
+        function addCenterMarker(position) {
+            if (!centerMarker) {
+                centerMarker = new AMap.Marker({
+                    map: map,
+                    position: position
+                });
+            } else {
+                centerMarker.setPosition(position)
+            }
+        }
+
+
+        var arrivalRange, polygons = [];
+        //添加多边形覆盖物
+        function getArriveRange() {
+            if (!arrivalRange) {
+                arrivalRange = new AMap.ArrivalRange()
+            }
+            var lnglat = $("#lnglat").val().split(',');
+            var t = $("#t").val();
+            var v = $("#v").val();
+
+            addCenterMarker(lnglat);
+
+            arrivalRange.search(lnglat, t, function (status, result) {
+                map.remove(polygons);
+                polygons = [];
+                if (result.bounds) {
+                    for (var i = 0; i < result.bounds.length; i++) {
+                        var polygon = new AMap.Polygon({
+                            fillColor: "#3366FF",
+                            fillOpacity: "0.4",
+                            strokeColor: "#00FF00",
+                            strokeOpacity: "0.5",
+                            strokeWeight: 1
+                        });
+                        polygon.setPath(result.bounds[i]);
+                        polygons.push(polygon);
+                    }
+                    map.add(polygons);
+                    map.setFitView();
+                }
+            }, {
+                policy: v
+            });
+        }
+
+
+        var isChanged = false;
+        $(function () {
+            $('.single-slider').jRange({
+                onstatechange: getArriveRange,
+                from: 1,
+                to: 45,
+                step: 1,
+                scale: [1, 15, 30, 45],
+                format: '%s',
+                width: 400,
+                showLabels: true,
+                showScale: true
+            });
+        });
+        getArriveRange();
+
+        $('#search').on('click', getArriveRange);
+        $('#v').on('change', getArriveRange);
+        $('#clear').on('click', function () { map.remove(polygons) });
+
+    </script>
+
+  <div class="layui-footer">
+    <!-- 底部固定区域 -->
+    © 2019 CUMT - NanJing 
+  </div>
+</div>
+
+<script>
+    //JavaScript代码区域
+    layui.use('element', function () {
+        var element = layui.element;
+
+    });
+</script>
+</body>
+</html>
+      

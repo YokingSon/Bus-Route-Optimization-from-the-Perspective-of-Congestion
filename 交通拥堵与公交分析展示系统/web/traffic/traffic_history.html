@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>南京市交通与公交分析平台</title>
+  <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/>
+  <link rel="stylesheet" href="../layui/css/layui.css">
+  <script src="../layui/layui.js"></script>
+
+    <style>
+        html,
+        body,
+        #container {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+  <div class="layui-header">
+    <div class="layui-logo">南京市交通与公交分析平台</div>
+    <!-- 头部区域（可配合layui已有的水平导航） -->
+      <ul class="layui-nav layui-layout-left">
+          <li class="layui-nav-item"><a href="traffic_history.html">历史拥堵</a></li>
+      </ul>
+    <ul class="layui-nav layui-layout-right">
+      <li class="layui-nav-item">
+        <a href="javascript:;">
+          <img src="http://t.cn/RCzsdCq" class="layui-nav-img">
+          孙玉庆
+        </a>
+        <dl class="layui-nav-child">
+          <dd><a href="">基本资料</a></dd>
+        </dl>
+      </li>
+      <li class="layui-nav-item"><a href="../index.html">退出</a></li>
+    </ul>
+  </div>
+  
+  <div class="layui-side layui-bg-black">
+    <div class="layui-side-scroll">
+      <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+      <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+        <li class="layui-nav-item layui-nav-itemed">
+          <a class="" href="javascript:;">功能</a>
+          <dl class="layui-nav-child">
+            <dd><a href="../traffic.html">实时拥堵</a></dd>
+            <dd><a href="../bus.html">公交分布</a></dd>
+          </dl>
+        </li>
+        <li class="layui-nav-item">
+          <a href="javascript:;">解决方案</a>
+          <dl class="layui-nav-child">
+            <dd><a href="../feature.html">特征公交线路优化</a></dd>
+          </dl>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 0px; height: 650px;" id="map" class="container">
+            <div class="input-card" style="width: auto; z-index: 2; margin-bottom: 580px">
+                 <h4 style="text-align:center">选择时段</h4>
+                <div class="input-item">
+                    <select id="select" class="select">
+                        <option value="a">08:00</option>
+                        <option value="b">09:00</option>
+                        <option value="c">10:00</option>
+                        <option value="d">11:00</option>
+                        <option value="e">12:00</option>
+                        <option value="f">13:00</option>
+                        <option value="g">14:00</option>
+                        <option value="h">15:00</option>
+                        <option value="i">16:00</option>
+                        <option value="j">17:00</option>
+                        <option value="k">18:00</option>
+                        <option value="l">19:00</option>
+                        <option value="m">20:00</option>
+                        <option value="n">21:00</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var dojoConfig = {
+            async: true,
+            packages: [{
+                "name": "js",
+                "location": location.pathname.replace(/\/[^/]+$/, "") + "/js"
+            }]
+        };
+    </script>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/3.28/esri/css/esri.css">
+    <script src="https://js.arcgis.com/3.28/"></script>
+
+
+    <script>
+        var map;
+        require([
+            "esri/map",
+            "js/GaodeLayer",
+            "dojo/parser",
+            "dojo/domReady!",
+            "esri/layers/ArcGISDynamicMapServiceLayer"],
+        function (Map, GaodeLayer, parser) {
+            parser.parse();
+            map = new Map("map", {
+                //logo: false,
+                center: [118.796623, 32.059352],
+                zoom: 12
+            });
+            var gdlayer = new GaodeLayer();
+            map.addLayer(gdlayer);
+
+            var layer = new esri.layers.ArcGISDynamicMapServiceLayer("http://localhost:6080/arcgis/rest/services/8am/MapServer");
+            map.addLayer(layer);
+
+            var select = document.getElementById("select");
+            select.onchange = function () {
+                var selvalue = select.value;
+                switch (selvalue) {
+                    case "a":
+                        var layer = new esri.layers.ArcGISDynamicMapServiceLayer("http://localhost:6080/arcgis/rest/services/8am/MapServer");
+                        map.addLayer(layer);
+                        break;
+                    case "b":
+                        var layer = new esri.layers.ArcGISDynamicMapServiceLayer("http://localhost:6080/arcgis/rest/services/9am/MapServer");
+                        map.addLayer(layer);
+                        break;
+                    case "c":
+                        var layer = new esri.layers.ArcGISDynamicMapServiceLayer("http://localhost:6080/arcgis/rest/services/10am/MapServer");
+                        map.addLayer(layer);
+                        break;
+                    case "d":
+                        var layer = new esri.layers.ArcGISDynamicMapServiceLayer("http://localhost:6080/arcgis/rest/services/11am/MapServer");
+                        map.addLayer(layer);
+                        break;
+                    case "e":
+                        var layer = new esri.layers.ArcGISDynamicMapServiceLayer("http://localhost:6080/arcgis/rest/services/12pm/MapServer");
+                        map.addLayer(layer);
+                        break;
+                    case "f":
+                        var layer = new esri.layers.ArcGISDynamicMapServiceLayer("http://localhost:6080/arcgis/rest/services/13pm/MapServer");
+                        map.addLayer(layer);
+                        break;
+                    case "g":
+                        var layer = new esri.layers.ArcGISDynamicMapServiceLayer("http://localhost:6080/arcgis/rest/services/14pm/MapServer");
+                        map.addLayer(layer);
+                        break;
+                    case "h":
+                        var layer = new esri.layers.ArcGISDynamicMapServiceLayer("http://localhost:6080/arcgis/rest/services/15pm/MapServer");
+                        map.addLayer(layer);
+                        break;
+                    case "i":
+                        var layer = new esri.layers.ArcGISDynamicMapServiceLayer("http://localhost:6080/arcgis/rest/services/16pm/MapServer");
+                        map.addLayer(layer);
+                        break;
+                    case "j":
+                        var layer = new esri.layers.ArcGISDynamicMapServiceLayer("http://localhost:6080/arcgis/rest/services/17pm/MapServer");
+                        map.addLayer(layer);
+                        break;
+                    case "k":
+                        var layer = new esri.layers.ArcGISDynamicMapServiceLayer("http://localhost:6080/arcgis/rest/services/18pm/MapServer");
+                        map.addLayer(layer);
+                        break;
+                    case "l":
+                        var layer = new esri.layers.ArcGISDynamicMapServiceLayer("http://localhost:6080/arcgis/rest/services/19pm/MapServer");
+                        map.addLayer(layer);
+                        break;
+                    case "m":
+                        var layer = new esri.layers.ArcGISDynamicMapServiceLayer("http://localhost:6080/arcgis/rest/services/20pm/MapServer");
+                        map.addLayer(layer);
+                        break;
+                    case "n":
+                        var layer = new esri.layers.ArcGISDynamicMapServiceLayer("http://localhost:6080/arcgis/rest/services/21pm/MapServer");
+                        map.addLayer(layer);
+                        break;
+
+
+                }
+
+
+            };
+
+        });
+
+        //require(["esri/map", "esri/layers/ArcGISDynamicMapServiceLayer"], function (Map) {
+        //    var map = new Map("map", {
+        //        center: [118.796623, 32.059352],
+        //        zoom: 13,
+        //        basemap: "dark-gray",
+        //    });
+        //            });
+
+
+    </script>
+
+
+    <div class="layui-footer">
+    <!-- 底部固定区域 -->
+    © 2019 CUMT - NanJing 
+  </div>
+</div>
+
+<script>
+    //JavaScript代码区域
+    layui.use('element', function () {
+        var element = layui.element;
+
+    });
+</script>
+</body>
+</html>

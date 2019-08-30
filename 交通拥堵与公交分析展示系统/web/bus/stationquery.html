@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>南京市交通与公交分析平台</title>
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
+    <link rel="stylesheet" href="../layui/css/layui.css">
+    <script src="../layui/layui.js"></script>
+
+    <style>
+        html,
+        body,
+        #container {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+  <div class="layui-header">
+    <div class="layui-logo">南京市交通与公交分析平台</div>
+    <!-- 头部区域（可配合layui已有的水平导航） -->
+      <ul class="layui-nav layui-layout-left">
+          <li class="layui-nav-item"><a href="stationquery.html">公交站点查询</a></li>
+          <li class="layui-nav-item"><a href="linequery.html">公交线路查询</a></li>
+          <li class="layui-nav-item"><a href="arrivalcircle.html">公交到达圈</a></li>
+          <li class="layui-nav-item"><a href="distribution.html">公交站点分布</a></li>
+          <li class="layui-nav-item"><a href="aggregation.html">公交站点聚合</a></li>
+          <li class="layui-nav-item"><a href="linedistribution.html">公交线路分布</a></li>
+      </ul>
+    <ul class="layui-nav layui-layout-right">
+      <li class="layui-nav-item">
+        <a href="javascript:;">
+          <img src="http://t.cn/RCzsdCq" class="layui-nav-img">
+          孙玉庆
+        </a>
+        <dl class="layui-nav-child">
+          <dd><a href="">基本资料</a></dd>
+        </dl>
+      </li>
+      <li class="layui-nav-item"><a href="../index.html">退出</a></li>
+    </ul>
+  </div>
+  
+  <div class="layui-side layui-bg-black">
+    <div class="layui-side-scroll">
+      <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+      <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+        <li class="layui-nav-item layui-nav-itemed">
+          <a class="" href="javascript:;">功能</a>
+          <dl class="layui-nav-child">
+            <dd><a href="../traffic.html">实时拥堵</a></dd>
+            <dd><a href="../bus.html">公交分布</a></dd>
+          </dl>
+        </li>
+        <li class="layui-nav-item">
+          <a href="javascript:;">解决方案</a>
+          <dl class="layui-nav-child">
+            <dd><a href="../feature.html">特征公交线路优化</a></dd>
+          </dl>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 0px; height: 650px;" id="container">
+        </div>
+
+
+        <div id="tip" class='info' style='min-width: 18rem;margin-top: 70px;'></div>
+
+        <div class="input-card" style='width: 18rem;margin-bottom: 40px;'>
+            <label style='color: grey'>公交站点查询</label>
+            <div class="input-item">
+                <div class="input-item-prepend"><span class="input-item-text">站名</span></div>
+                <input id='stationKeyWord' type="text" value='夫子庙'>
+            </div>
+            <input id="search" type="button" class="btn" value="查询" />
+        </div>
+
+
+    </div>
+
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.14&key=1ce05304d8ae971dc4a3bc278b0dd44e&plugin=AMap.StationSearch"></script>
+
+    <script>
+
+        var map = new AMap.Map('container', {
+            mapStyle: 'amap://styles/twilight',
+            zoom: 12,
+            center: [118.796623, 32.059352],
+            // AMap 底图 viewMode 默认为 2D，如需开启 3D 则需要显示指定
+            // viewMode: '2D'
+        });
+
+        stationSearch();
+        /*公交站点查询*/
+        function stationSearch() {
+            map.clearMap();
+            var stationKeyWord = document.getElementById('stationKeyWord').value
+            if (!stationKeyWord) return
+            //实例化公交站点查询类
+            var station = new AMap.StationSearch({
+                pageIndex: 1, //页码
+                pageSize: 60, //单页显示结果条数
+                city: '025'   //确定搜索城市
+            });
+            station.search(stationKeyWord, function (status, result) {
+                if (status === 'complete' && result.info === 'OK') {
+                    stationSearch_CallBack(result);
+                } else {
+                    //document.getElementById('tip').innerHTML = JSON.stringify(result);
+                    document.getElementById('tip').innerHTML = "没有找到相关地点";
+                }
+            });
+        }
+        /*公交站点查询返回数据解析*/
+        function stationSearch_CallBack(searchResult) {
+            var stationArr = searchResult.stationInfo;
+            var searchNum = stationArr.length;
+            if (searchNum > 0) {
+                document.getElementById('tip').innerHTML = '查询结果：共' + searchNum + '个相关站点';
+                for (var i = 0; i < searchNum; i++) {
+                    var marker = new AMap.Marker({
+                        icon: new AMap.Icon({
+                            image: 'https://a.amap.com/jsapi_demos/static/resource/img/pin.png',
+                            size: new AMap.Size(32, 32),
+                            imageSize: new AMap.Size(32, 32)
+                        }),
+                        offset: new AMap.Pixel(-16, -32),
+                        position: stationArr[i].location,
+                        map: map,
+                        title: stationArr[i].name
+                    });
+                    marker.info = new AMap.InfoWindow({
+                        content: stationArr[i].name,
+                        offset: new AMap.Pixel(0, -30)
+                    });
+                    marker.on('mouseover', function (e) {
+                        e.target.info.open(map, e.target.getPosition())
+                    })
+                }
+ 
+                map.setFitView();
+            }
+        }
+
+        document.getElementById('search').onclick = stationSearch;
+ 
+
+    </script>
+
+  <div class="layui-footer">
+    <!-- 底部固定区域 -->
+    © 2019 CUMT - NanJing 
+  </div>
+</div>
+
+<script>
+    //JavaScript代码区域
+    layui.use('element', function () {
+        var element = layui.element;
+
+    });
+</script>
+</body>
+</html>
+      

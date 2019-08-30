@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>南京市交通与公交分析平台</title>
+  <link rel="stylesheet" href="layui/css/layui.css">
+  <script src="layui/layui.js"></script>
+  <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/>
+  <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.14&key=1ce05304d8ae971dc4a3bc278b0dd44e"></script> 
+
+    <style>
+        html,
+        body,
+        #container {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+  <div class="layui-header">
+    <div class="layui-logo">南京市交通与公交分析平台</div>
+    <!-- 头部区域（可配合layui已有的水平导航） -->
+    <ul class="layui-nav layui-layout-left">
+    </ul>
+    <ul class="layui-nav layui-layout-right">
+      <li class="layui-nav-item">
+        <a href="javascript:;">
+          <img src="http://t.cn/RCzsdCq" class="layui-nav-img">
+          孙玉庆
+        </a>
+        <dl class="layui-nav-child">
+          <dd><a href="">基本资料</a></dd>
+        </dl>
+      </li>
+      <li class="layui-nav-item"><a href="index.html">退出</a></li>
+    </ul>
+  </div>
+  
+  <div class="layui-side layui-bg-black">
+    <div class="layui-side-scroll">
+      <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+      <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+        <li class="layui-nav-item layui-nav-itemed">
+          <a class="" href="javascript:;">功能</a>
+          <dl class="layui-nav-child">
+            <dd><a href="traffic.html">实时拥堵</a></dd>
+            <dd><a href="bus.html">公交分布</a></dd>
+          </dl>
+        </li>
+        <li class="layui-nav-item">
+          <a href="javascript:;">解决方案</a>
+          <dl class="layui-nav-child">
+            <dd><a href="feature.html">特征公交线路优化</a></dd>
+          </dl>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 0px; height: 650px;" id="container" class="container">
+
+        </div>
+    </div>
+
+
+    <script>
+        var map = new AMap.Map('container', {
+            resizeEnable: true,
+            mapStyle: 'amap://styles/7b4296618df596779818602308126fe2',
+            center: [118.796623, 32.059352],
+            zoom: 12
+        });
+
+    </script>
+
+    <div class="layui-footer">
+    <!-- 底部固定区域 -->
+    © 2019 CUMT - NanJing 
+  </div>
+</div>
+
+<script>
+    //JavaScript代码区域
+    layui.use('element', function () {
+        var element = layui.element;
+
+    });
+</script>
+</body>
+</html>

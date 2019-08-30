@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>南京市交通与公交分析平台</title>
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
+    <link rel="stylesheet" href="../layui/css/layui.css">
+    <script src="../layui/layui.js"></script>
+
+    <style>
+        html,
+        body,
+        #container {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+  <div class="layui-header">
+    <div class="layui-logo">南京市交通与公交分析平台</div>
+    <!-- 头部区域（可配合layui已有的水平导航） -->
+      <ul class="layui-nav layui-layout-left">
+          <li class="layui-nav-item"><a href="stationquery.html">公交站点查询</a></li>
+          <li class="layui-nav-item"><a href="linequery.html">公交线路查询</a></li>
+          <li class="layui-nav-item"><a href="arrivalcircle.html">公交到达圈</a></li>
+          <li class="layui-nav-item"><a href="distribution.html">公交站点分布</a></li>
+          <li class="layui-nav-item"><a href="aggregation.html">公交站点聚合</a></li>
+          <li class="layui-nav-item"><a href="linedistribution.html">公交线路分布</a></li>
+      </ul>
+    <ul class="layui-nav layui-layout-right">
+      <li class="layui-nav-item">
+        <a href="javascript:;">
+          <img src="http://t.cn/RCzsdCq" class="layui-nav-img">
+          孙玉庆
+        </a>
+        <dl class="layui-nav-child">
+          <dd><a href="">基本资料</a></dd>
+        </dl>
+      </li>
+      <li class="layui-nav-item"><a href="../index.html">退出</a></li>
+    </ul>
+  </div>
+  
+  <div class="layui-side layui-bg-black">
+    <div class="layui-side-scroll">
+      <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+      <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+        <li class="layui-nav-item layui-nav-itemed">
+          <a class="" href="javascript:;">功能</a>
+          <dl class="layui-nav-child">
+            <dd><a href="../traffic.html">实时拥堵</a></dd>
+            <dd><a href="../bus.html">公交分布</a></dd>
+          </dl>
+        </li>
+        <li class="layui-nav-item">
+          <a href="javascript:;">解决方案</a>
+          <dl class="layui-nav-child">
+            <dd><a href="../feature.html">特征公交线路优化</a></dd>
+          </dl>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 0px; height: 650px;" id="container">
+        </div>
+
+        <div class="input-card" style="margin-bottom: 40px;">
+            <h4 style="text-align:center">聚合点效果切换</h4>
+            <div class="input-item">
+                <input type="button" style="margin-right:14px;margin-left:14px;" class="btn" value="样式1" id="add0" onclick='addCluster(0)' />
+                <input type="button" style="margin-right:14px;margin-left:14px;" class="btn" value="样式2" id="add1" onclick='addCluster(1)' />
+                <input type="button" style="margin-right:14px;margin-left:14px;" class="btn" value="样式3" id="add2" onclick='addCluster(2)' />
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="busstation2.js"></script>
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.14&key=1ce05304d8ae971dc4a3bc278b0dd44e&plugin=AMap.MarkerClusterer""></script>
+
+    <script>
+
+        var cluster, markers = [];
+
+        var map = new AMap.Map('container', {
+            mapStyle: 'amap://styles/twilight',
+            zoom: 12,
+            center: [118.796623, 32.059352],
+            // AMap 底图 viewMode 默认为 2D，如需开启 3D 则需要显示指定
+            // viewMode: '2D'
+        });
+
+        for (var i = 0; i < points.length; i += 1) {
+            markers.push(new AMap.Marker({
+                position: points[i]['lnglat'],
+                content: '<div style="background-color: hsla(180, 100%, 50%, 0.7); height: 24px; width: 24px; border: 1px solid hsl(180, 100%, 40%); border-radius: 12px; box-shadow: hsl(180, 100%, 50%) 0px 0px 1px;"></div>',
+                offset: new AMap.Pixel(-15, -15)
+            }))
+        }
+
+        var count = markers.length;
+        var _renderClusterMarker = function (context) {
+            var factor = Math.pow(context.count / count, 1 / 18);
+            var div = document.createElement('div');
+            var Hue = 180 - factor * 180;
+            var bgColor = 'hsla(' + Hue + ',100%,50%,0.7)';
+            var fontColor = 'hsla(' + Hue + ',100%,20%,1)';
+            var borderColor = 'hsla(' + Hue + ',100%,40%,1)';
+            var shadowColor = 'hsla(' + Hue + ',100%,50%,1)';
+            div.style.backgroundColor = bgColor;
+            var size = Math.round(30 + Math.pow(context.count / count, 1 / 5) * 20);
+            div.style.width = div.style.height = size + 'px';
+            div.style.border = 'solid 1px ' + borderColor;
+            div.style.borderRadius = size / 2 + 'px';
+            div.style.boxShadow = '0 0 1px ' + shadowColor;
+            div.innerHTML = context.count;
+            div.style.lineHeight = size + 'px';
+            div.style.color = fontColor;
+            div.style.fontSize = '14px';
+            div.style.textAlign = 'center';
+            context.marker.setOffset(new AMap.Pixel(-size / 2, -size / 2));
+            context.marker.setContent(div)
+        };
+
+        addCluster(2);
+
+        function addCluster(tag) {
+            if (cluster) {
+                cluster.setMap(null);
+            }
+            if (tag == 2) {//完全自定义
+                cluster = new AMap.MarkerClusterer(map, markers, {
+                    gridSize: 80,
+                    renderClusterMarker: _renderClusterMarker
+                });
+            } else if (tag == 1) {//自定义图标
+                var sts = [{
+                    url: "https://a.amap.com/jsapi_demos/static/images/blue.png",
+                    size: new AMap.Size(32, 32),
+                    offset: new AMap.Pixel(-16, -16)
+                }, {
+                    url: "https://a.amap.com/jsapi_demos/static/images/green.png",
+                    size: new AMap.Size(32, 32),
+                    offset: new AMap.Pixel(-16, -16)
+                }, {
+                    url: "https://a.amap.com/jsapi_demos/static/images/orange.png",
+                    size: new AMap.Size(36, 36),
+                    offset: new AMap.Pixel(-18, -18)
+                }, {
+                    url: "https://a.amap.com/jsapi_demos/static/images/red.png",
+                    size: new AMap.Size(48, 48),
+                    offset: new AMap.Pixel(-24, -24)
+                }, {
+                    url: "https://a.amap.com/jsapi_demos/static/images/darkRed.png",
+                    size: new AMap.Size(48, 48),
+                    offset: new AMap.Pixel(-24, -24)
+                }];
+                cluster = new AMap.MarkerClusterer(map, markers, {
+                    styles: sts,
+                    gridSize: 80
+                });
+            } else {//默认样式
+                cluster = new AMap.MarkerClusterer(map, markers, { gridSize: 80 });
+            }
+        }
+
+    </script>
+
+  <div class="layui-footer">
+    <!-- 底部固定区域 -->
+    © 2019 CUMT - NanJing 
+  </div>
+</div>
+
+<script>
+    //JavaScript代码区域
+    layui.use('element', function () {
+        var element = layui.element;
+
+    });
+</script>
+</body>
+</html>
+      

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>南京市交通与公交分析平台</title>
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
+    <link rel="stylesheet" href="../layui/css/layui.css">
+    <script src="../layui/layui.js"></script>
+
+    <style>
+        html,
+        body,
+        #container {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+  <div class="layui-header">
+    <div class="layui-logo">南京市交通与公交分析平台</div>
+    <!-- 头部区域（可配合layui已有的水平导航） -->
+      <ul class="layui-nav layui-layout-left">
+          <li class="layui-nav-item"><a href="stationquery.html">公交站点查询</a></li>
+          <li class="layui-nav-item"><a href="linequery.html">公交线路查询</a></li>
+          <li class="layui-nav-item"><a href="arrivalcircle.html">公交到达圈</a></li>
+          <li class="layui-nav-item"><a href="distribution.html">公交站点分布</a></li>
+          <li class="layui-nav-item"><a href="aggregation.html">公交站点聚合</a></li>
+          <li class="layui-nav-item"><a href="linedistribution.html">公交线路分布</a></li>
+      </ul>
+    <ul class="layui-nav layui-layout-right">
+      <li class="layui-nav-item">
+        <a href="javascript:;">
+          <img src="http://t.cn/RCzsdCq" class="layui-nav-img">
+          孙玉庆
+        </a>
+        <dl class="layui-nav-child">
+          <dd><a href="">基本资料</a></dd>
+        </dl>
+      </li>
+      <li class="layui-nav-item"><a href="../index.html">退出</a></li>
+    </ul>
+  </div>
+  
+  <div class="layui-side layui-bg-black">
+    <div class="layui-side-scroll">
+      <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+      <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+        <li class="layui-nav-item layui-nav-itemed">
+          <a class="" href="javascript:;">功能</a>
+          <dl class="layui-nav-child">
+            <dd><a href="../traffic.html">实时拥堵</a></dd>
+            <dd><a href="../bus.html">公交分布</a></dd>
+          </dl>
+        </li>
+        <li class="layui-nav-item">
+          <a href="javascript:;">解决方案</a>
+          <dl class="layui-nav-child">
+            <dd><a href="../feature.html">特征公交线路优化</a></dd>
+          </dl>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 0px; height: 650px;" id="container">
+        </div>
+        <div class="info" style="margin-top: 60px;">
+            <h4>公交站点展示</h4>
+            <p>站点数量：<span id="massNumber">13963</span></p>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.14&key=1ce05304d8ae971dc4a3bc278b0dd44e"></script>
+    <script type="text/javascript" src="busstation.js"></script>
+
+    <script>
+
+        var map = new AMap.Map('container', {
+            mapStyle: 'amap://styles/twilight',
+            zoom: 12,
+            center: [118.796623, 32.059352],
+            viewMode: '3D',
+            pitch: 60,
+            //showLabel: false,
+            //expandZoomRange: true,
+        });
+
+        map.on('complete', function () {
+            var viewData = {'2D': 3E3, '3D': 3E4};
+            var curViewMode = map.getViewMode_();
+
+            // 创建 AMap.LabelsLayer 图层
+            var layer = new AMap.LabelsLayer({
+                zooms: [3, 20],
+                zIndex: 1000
+            });
+
+            // 将图层添加到地图
+            map.add(layer);
+
+            var markers = [];
+            var positions = Positions.slice(0, viewData[curViewMode]);
+
+            var icon = {
+                type: 'image',
+                image: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_b.png',
+                size: [10, 15],
+                anchor: 'bottom-center',
+                angel: 0,
+                retina: true
+            };
+
+            for (var i = 0; i < positions.length; i++) {
+                var curPosition = positions[i];
+                var curData = {
+                    position: curPosition,
+                    icon:icon
+                    };
+
+                var labelMarker = new AMap.LabelMarker(curData);
+
+                markers.push(labelMarker);
+            }
+        
+            // 一次性将海量点添加到图层
+            layer.add(markers);
+        
+            var mapViewElement = document.getElementById('mapView');
+            var massNumberElement = document.getElementById('massNumber');
+            mapViewElement.innerHTML = curViewMode;
+            massNumberElement.innerHTML = viewData[curViewMode];
+        });
+    </script>
+
+  <div class="layui-footer">
+    <!-- 底部固定区域 -->
+    © 2019 CUMT - NanJing 
+  </div>
+</div>
+
+<script>
+    //JavaScript代码区域
+    layui.use('element', function () {
+        var element = layui.element;
+
+    });
+</script>
+</body>
+</html>
+      
