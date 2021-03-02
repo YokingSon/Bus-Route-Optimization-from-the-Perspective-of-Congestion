@@ -21,7 +21,7 @@ for i in range(part_n):
         left_bottom_part = [left_bottom[0]+i*x_item,left_bottom[1]+j*y_item]; # 切片的左下角坐标
         right_top_part = [left_bottom_part[0]+x_item,left_bottom_part[1]+y_item]; # 切片的右上角坐标
         url=url0+str(left_bottom_part[0])+','+str(left_bottom_part[1])+';'+str(right_top_part[0])+','+str(right_top_part[1])+'&output=json&key='+ak+'&extensions=all'
-        #url = 'http://restapi.amap.com/v3/traffic/status/rectangle?rectangle=116.351147,39.966309;116.357134,39.968727&output=json&key=2aca7b77d2914d26a9e93da027825479';
+        #url = 'http://restapi.amap.com/v3/traffic/status/rectangle?rectangle=116.351147,39.966309;116.357134,39.968727&output=json&key=yourkey';
         #url=url0+'116.351147'+','+'39.966309'+';'+'116.357134'+','+'39.968727'+'&output=json&key='+ak
         
         data=urllib.request.urlopen(url)
